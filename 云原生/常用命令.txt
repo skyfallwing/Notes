@@ -1,0 +1,81 @@
+ （最重要的一条！）查看命令帮助文档：kubectl -h、kubectl [子命令] -h等
+ kubectl -n kube-system get po    查看kube-system命名空间下的对象
+ kubectl -n kube-system get po -o wide  比第一个更加详细
+ 创建k8s资源：kubectl create 和 kubectl  和apply的区别是什么？答：apply会包含更新，因此apply包含了create的功能
+ systemctl restart kubelet  重启kubelet 
+ 根据yaml文件部署对象：kubectl apply -f xxx.yaml 或者直接是单层目录时：kubectl apply -f xxx/ 或者存在多级目录时：kubectl apply -R -f xxx/
+ 获得详细信息（例如：node）kubectl get po [pod名字] -o wide（说明：-o表示output）
+ 查看实时的、动态的信息：kubectl get po -w（说明：-w表示watch）
+ 获取资源的最详细的信息：kubectl get po [pod名字] -o json或yaml
+ 官方中有这么一段话：除了 kubectl describe pod 以外，另一种获取 Pod 额外信息（除了 kubectl get pod）的方法 是给 kubectl get pod 增加 -o yaml 输出格式参数。 该命令将以 YAML 格式为你提供比 kubectl describe pod 更多的信息 —— 实际上是系统拥有的关于 Pod 的所有信息
+ 查看service信息：kubectl get svc [svc名字]
+ 以JSON格式输出单个pod：kubectl get po -n [namespace] [pod名字] -o json
+ 以jsonpath指定要获取的key：kubectl get po -n [namespace] [pod名字] -o jsonpath='{.status.phrase}'
+ 创建命名空间：kubectl create namespace [命名空间名]
+ 查看k8s集群版本：kubectl version
+ 查看集群的信息：kubectl cluster-info
+ 查看pod和service：kubectl get po,svc -o wide
+ 查看所有类型的资源（just工作负载）：kubectl get all
+ 文件拷贝：（拷贝容器内的文件到本地）kubectl cp mysql-478535978-1dnm2:/tmp/message.log message.log   （拷贝本地文件到容器内）kubectl cp message.log mysql-478535978-1dnm2:/tmp/
+ 获取node简要信息：kubectl get node
+ 获取node详细信息（包括ip）：kubectl get node -o wide
+ 查看服务（svc）事件：kubectl describe svc [service的名字]
+ 查看pod事件：kubectl describe pod [pod名字] -n [namespace]
+ 查看node事件：kubectl describe node [node名字]
+ 进入pod并执行命令（exec只有pod能用）：kubectl exec -it [pod名字] -- /bin/bash
+ 查看集群资源使用情况（跟宿主机usage无关，只是k8s占用的资源）：kubectl top node 或者 kubectl top pod
+ 查看pod日志(eg：springboot项目日志)：kubectl logs [pod名字]
+ 删除k8s资源：kubectl delete -f xxx.yaml
+ curl [ip地址:port]
+ 删除污点：kubectl taint node [node名字] [污点名字]-
+ 强制删除pod：kubectl delete pod [pod名字] --grace-period=0 --force --namespace [namespace]
+ 更新资源的某些字段或内容：kubectl patch -n kube-system daemonset cilium --type='json' -p='[{"op": "remove", "path": "/spec/template/spec/tolerations"}]'
+ 删除服务：kubectl delete svc [service的名字]
+ 修改svc的配置文件（也就是yaml文件）：kubectl edit svc [service的名字] -n [namespace]
+ 列出全部事件：kubectl get events -A
+ 查看所有api资源：kubectl api-resources -o wide
+ 查看kubeconfig（用来配置k8s客户端来访问k8s集群）：kubectl config view
+ 修改deployment、replica set、replication controller、stateful set的副本数量：kubectl scale deployment/rs/rc/statefulset [资源实例名] --replicas=数字
+ 查看所有node/pod的labels：kubectl get nodes/pods --show-labels
+ 查看某个node/pod的labels：kubectl get nodes/pods [node名字/pod名字] --show-labels
+ 给所有node/pod追加label：kubectl label nodes/pods --all key=value
+ 给某个node/pod追加label：kubectl label nodes/pods [node名字/pod名字] key=value
+ 删除所有node/pod的某个label：kubectl label nodes/pods --all key-
+ 删除某个node/pod的某个label：kubectl label nodes/pods [node名字/pod名字] key-
+ 查看Kubernetes 配置文件（kubeconfig）的内容：kubectl config view --raw		这是查看集群证书的重要命令
+ 检查证书何时过期：kubeadm certs check-expiration
+ 查看集群的域名：kubectl -n kube-system get cm kubeadm-config -o yaml | grep dnsDomain
+ 标记node为不可用，不驱逐已有的pod：kubectl cordon <nodeName>
+ 标记node为不可用，并驱逐节点上的所有Pod：kubectl drain <nodeName>
+ kubectl自动补全命令：1、source <(kubectl completion bash)       2、echo "source <(kubectl completion bash)" >> ~/.bashrc
+ 下载pod日志到本地：kubectl -n platform logs alarm-79566b8c84-5v9qj > /root/alarm.log
+ 
+ 
+ 
+ 启动docker：systemctl start docker
+ 查看docker状态：systemctl status docker
+ 列出本地所有镜像：docker images
+ 创建镜像：docker build（--no-cache参数：不带缓存）
+ 创建容器但不启动：docker create
+ 创建并启动容器：docker run
+ 列出所有当前运行的容器：docker ps
+ 列出所有容器:docker ps -a
+ 启动容器，命令行entrypoint会覆盖Dockerfile中的ENTRYPOINT，并进入到命令行：docker run -it --entrypoint=bash [镜像]
+ 进入容器（在运行的容器中执行命令）：docker exec -it [容器ID] /bin/bash
+ 退出容器：ps能查到，还在后台运行：先按ctrl+p，再按ctrl+q；   再次进入容器：docker exec -it [容器ID] /bin/bash
+ 暂停容器：docker stop [容器ID]; 让容器优雅暂停，暂停前让容器先保存状态、处理当前请求等暂停前的准备工作，而kill比较一刀切，不推荐使用！
+ 启动容器：docker start [容器ID]
+ 将一个或多个镜像归档到tar包里：docker save [镜像] > xxx.tar
+ 从tar包或STDIN加载镜像：docker load -i xxx.tar （-i：Read from tar archive file, instead of STDIN）
+ 删除容器：docker rm -f [容器ID]
+ 删除镜像：docker rmi [镜像ID]
+ 列出引擎守护进程知道的所有网络（包括跨群集中多个主机的网络）：docker network ls
+ 删除docker创建的网络：docker network rm [网络ID]
+ 获取容器/镜像内的元数据（容器网络、ip等）：docker inspect [容器ID]
+ 查看指定镜像的创建历史：docker history [镜像]
+ 查看容器中的正在运行的进程，比如pid、cmd等（类似于Linux中的top或ps命令）：docker top [容器]
+ 退出容器时自动删除：可以使用Docker的 --rm 选项
+ 拉取镜像时，选择ARM架构：docker pull --platform=linux/arm64 [镜像名]:[tag]
+ 拉取镜像时，选择X86架构（其实不用特意指定架构，因为默认就是X86）：docker pull --platform=linux/amd64 [镜像名]:[tag]
+ 
+ 
