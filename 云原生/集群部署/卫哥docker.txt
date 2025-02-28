@@ -1,0 +1,18 @@
+问题背景：我们的harbor私有镜像仓库中不存在某些需要的镜像，这时可以先从外网pull到本地，再从本地push到私有仓库
+卫哥操作：
+docker search pause
+docker pull rancher/pause:3.5
+docker images
+docker tag rancher/pause:3.5 wirepo.td-tech.com/cnp/pause:3.5
+docker push wirepo.td-tech.com/cnp/pause:3.5
+
+
+
+总结的思路：
+1. docker search etcd
+2. docker pull k8s.gcr.io/etcd:3.5.0-0
+3. docker tag k8s.gcr.io/etcd:3.5.0-0 wirepo.td-tech.com/cnp/etcd:3.5.0-0
+4. docker login wirepo.td-tech.com（不能用ip地址，只能用域名）
+5. docker push wirepo.td-tech.com/cnp/etcd:3.5.0-0
+
+k8s.gcr.io/coredns:1.8.4
