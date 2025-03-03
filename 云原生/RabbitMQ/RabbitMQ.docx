@@ -1,0 +1,103 @@
+1.	RabbitMQ架构
+ 
+
+	生产者：发送消息的应用
+	消费者：接收消息的应用
+	Exchange：将消息路由到Queue的组件
+	Queue：存储消息的缓冲区
+
+2.	什么是Exchange
+Exchange是RabbitMQ的消息路由代理。生产者向RabbitMQ发送消息时，不会直接将消息发送到Queue，而是先将消息发送到Exchange，由Exchange将消息路由到一个或多个Queue。Exchange根据Binding Key、Routing Key以及Headers属性路由消息。
+
+3.	四种Echange类型
+(1)	Direct Exchange（直连交换机）
+	路由规则
+Direct Exchange根据Binding Key和Routing Key完全匹配的规则路由消息。
+	使用场景
+Direct Exchange适用于通过简单字符标识符区分消息的场景。Direct Exchange常用于单播路由。
+	匹配示例
+Direct Exchange根据Binding Key和Routing Key完全匹配的规则路由消息的示例如下：
+ 
+Message	Routing Key	Binding Key	Queue
+Message A	img.create	img.create	Queue A
+Message B	img.log	img.log	Queue B
+
+(2)	Fanout Exchange（扇型交换机）
+	路由规则
+Fanout Exchange忽略Routing Key和Binding Key的匹配规则将消息路由到所有绑定的Queue。
+	使用场景
+Fanout Exchange适用于广播消息的场景。例如，分发系统使用Fanout Exchange来广播各种状态和配置更新。
+	路由示例
+Fanout Exchange忽略Routing Key和Binding Key的匹配规则将消息路由到所有绑定的Queue的示例如下：
+ 
+Message	Routing Key	Binding Key	Queue
+Message A	img.create	o	files.cn.hz.#
+o	queue.msgText	o	Queue A
+Queue B
+Message B	queue.msgMap	o	files.cn.hz.#
+o	queue.msgText	o	Queue A
+o	Queue B
+Message C	cn.hz.topic.alarm	o	files.cn.hz.#
+o	queue.msgText	o	Queue A
+Queue B
+
+(3)	Topic Exchange（主题交换机）
+	路由规则
+Topic Exchange根据Binding Key和Routing Key通配符匹配的规则路由消息。Topic Exchange支持的通配符包括星号（*）和井号（#）。星号（*）代表一个英文单词（例如cn）。井号（#）代表零个、一个或多个英文单词，英文单词间通过英文句号（.）分隔，例如cn.zj.hz。
+	使用场景
+Topic Exchange适用于通过通配符区分消息的场景。Topic Exchange常用于多播路由。例如，使用Topic Exchange分发有关于特定地理位置的数据。
+	路由示例
+Topic Exchange根据Binding Key和Routing Key通配符匹配的规则路由消息的示例如下：
+ 
+Message	Routing Key	Binding Key	Queue
+Message A	files.cn.hz	files.cn.hz.#	Queue A
+Message B	files.cn.hz.store	o	files.cn.hz.#
+o	files.cn.*.store	o	Queue A
+o	Queue B
+Message C	files.cn.sz.store	files.cn.*.store	Queue B
+
+(4)	Headers Exchange（头交换机）
+	路由规则
+Headers Exchange可以被视为Direct Exchange的另一种表现形式。Headers Exchange可以像Direct Exchange一样工作，不同之处在于Headers Exchange使用Headers属性代替Routing Key进行路由匹配。您在绑定Headers Exchange和Queue时，可以设置绑定属性的键值对。然后，在向Headers Exchange发送消息时，设置消息的Headers属性键值对。Headers Exchange将根据消息Headers属性键值对和绑定属性键值对的匹配情况路由消息。
+匹配算法由一个特殊的绑定属性键值对控制。该属性为x-match，只有以下两种取值：
+	all：所有除x-match以外的绑定属性键值对必须和消息Headers属性键值对匹配才会路由消息。
+	any：只要有一组除x-match以外的绑定属性键值对和消息Headers属性键值对匹配就会路由消息。
+以下两种情况下，认为消息Headers属性键值对和绑定属性键值对匹配：
+	消息Headers属性的键和值与绑定属性的键和值完全相同。
+	消息Headers属性的键和绑定属性的键完全相同，但绑定属性的值为空。
+	使用场景
+Headers Exchange适用于通过多组Headers属性区分消息的场景。Headers Exchange常用于多播路由。例如，涉及到分类或者标签的新闻更新。
+	使用示例
+Headers Exchange根据消息Headers属性和Binding Headers属性的匹配规则路由消息的示例如下：
+ 
+Message	消息Headers属性	Binding Headers属性	Queue
+Message A	type=read
+resource=group		type=read
+resource=group
+x-match=all
+
+	type=read
+resource=topic
+x-match=any	o	Queue A
+Queue B
+Message B	type=read	type=read
+resource=topic
+x-match=any	o	Queue B
+Message C	type=write
+resource=topic	type=read
+resource=topic
+x-match=any	Queue B
+
+4.	RabbitMQ优势和应用场景
+	特点和优势
+(1)	消息传递：RabbitMQ是一个通用的消息代理系统，支持多种消息传递模式，如发布/订阅、点对点和请求/响应
+(2)	灵活性：RabbitMQ 提供了丰富的消息传递模式和交换机类型，可以适应各种消息通信需求。
+(3)	消息确认机制： RabbitMQ 支持消息的可靠性传递，可以确保消息被成功处理。
+(4)	易于使用： RabbitMQ 提供了简单的 API，易于集成和使用。
+	适用场景
+(1)	异步解耦
+可用于单体应用被拆解为微服务后不同微服务间的通信。应用解耦的好处是不同应用的迭代不再相互依赖，而异步通信的好处是数据不再需要被立即处理。异步解耦能有效缩短数据链路长度，提高数据处理效率。
+(2)	分布式缓存同步
+大量并发访问数据库会导致页面响应时间长。通过消息队列 RabbitMQ构建分布式缓存，支持实时通知数据变化，有效降低页面响应时间，满足对变更的大量访问需求。
+	总结
+rabbitmq是基于AMQP协议来实现的开源消息队列系统。AMQP的主要特征是面向消息、队列、路由（包括点对点和发布/订阅）、可靠性、安全。AMQP协议更多用在企业系统内，对数据一致性、稳定性和可靠性要求很高的场景，对性能和吞吐量的要求还在其次。因此，rabbitmq适合用在实时的对可靠性要求比较高的消息传递上，适合企业级的消息发送订阅。
